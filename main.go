@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -17,6 +16,13 @@ The commands are:
 	py		generate python scripts
 	help		print this message
 
+Arfuments of sh:
+	-a string	Author of the script. default is $USER for your environment (default "eragon")
+	-d string	Description of the script (default "Basic shell script")
+	-p string	Path for the script to save (default "hello_world.sh")
+	-pt		Create script by promting all variables in the termianl
+	-t string	Bash script Type (default "hello_world")
+	-v string	Version of the script (default "1.0")
 `
 	CMD_HELP_STRING = `sgen <command>  [arguments] [path]
 Valid commands are 'sh', 'py' and 'help'
@@ -44,7 +50,12 @@ func main() {
 	// help subcommand
 	hellpCmd := flag.NewFlagSet("help", flag.ExitOnError)
 
-	// print help strin
+	// print help string when used without any args
+	if len(os.Args) <= 1 {
+		fmt.Print(HELP_STRING)
+		os.Exit(1)
+	}
+
 	// subcommand check
 	if len(os.Args) < 2 {
 		fmt.Print(CMD_HELP_STRING)
@@ -69,67 +80,4 @@ func main() {
 		os.Exit(1)
 	}
 
-}
-
-func sh(shell_type string, path string, desc string, version string, author string, promt bool) {
-
-	switch shell_type {
-
-	case "hello_world":
-		if !promt {
-			sh_hello_world(path, desc, author, version)
-		}
-		fmt.Printf("Creating script type: %s, path: %s ...\n", shell_type, path)
-		desc = getInput("description", desc)
-		version = getInput("version", version)
-		author = getInput("user", author)
-		sh_hello_world(path, desc, author, version)
-	}
-}
-
-func sh_hello_world(path string, desc string, author string, version string) {
-
-	out := fmt.Sprintf(
-		`#!/bin/bash
-#
-# Description: %s
-# Author: %s
-# Version: %s
-# -------------------------------------------
-
-echo "Hello World!"
-`,
-		desc, author, version)
-	// Only allow owner to execute the script 0700
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0700)
-	checkError(err, fmt.Sprintf("Uanble to open file %s", path))
-	defer f.Close()
-	f.WriteString(out)
-	fmt.Println("existing")
-}
-
-func checkError(err error, msg string) {
-	if err != nil {
-		fmt.Println(msg)
-	}
-}
-
-func getInput(key string, def string) string {
-
-	// reader
-	reader := bufio.NewReader(os.Stdin)
-
-	// Promt for the value
-	fmt.Printf("%s[%s]: ", key, def)
-	tmp, err := reader.ReadString('\n')
-	if err != nil {
-		// retry if this failed
-		fmt.Println("Error in parsing input. Try again")
-		getInput(key, def)
-	}
-	if tmp == "\n" {
-		return def
-	}
-	// returing with last new line removed
-	return tmp[:len(tmp)-1]
 }
