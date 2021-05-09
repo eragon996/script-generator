@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 func sh(shell_type string, path string, desc string, version string, author string, promt bool) {
@@ -34,10 +33,6 @@ func sh_hello_world(path string, desc string, author string, version string) {
 echo "Hello World!"
 `,
 		desc, author, version)
-	// Only allow owner to execute the script 0700
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0700)
-	checkError(err, fmt.Sprintf("Uanble to open file %s", path))
-	defer f.Close()
-	f.WriteString(out)
-	fmt.Println("existing")
+
+	safeWriteToFile(out, path)
 }
